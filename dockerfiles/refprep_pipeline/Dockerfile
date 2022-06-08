@@ -17,13 +17,13 @@ RUN apt-get update \
     && apt-get -y install wget \
                           make \
                           gcc \
-                          # libbz2-dev \
-                          # libncurses5-dev \
+                          libbz2-dev \
+                          libncurses5-dev \
                           # libncursesw5-dev \
                           csh \
-                          # libcurl4-openssl-dev \
-                          # liblzma-dev \
-                          # zlib1g-dev \
+                          libcurl4-openssl-dev \
+                          liblzma-dev \
+                          zlib1g-dev \
                           bwa \
                           # perl \
                           # cpanminus \
@@ -31,9 +31,6 @@ RUN apt-get update \
     && apt-get clean \
     && apt-get purge \
     && rm -rf /var/lib/apt/lists/* /tmp/* /var/tmp/*
-
-# Add JSON module to perl
-RUN cpanm JSON 
 
 # Install bwa
 # RUN wget https://github.com/lh3/bwa/releases/download/v0.7.17/bwa-0.7.17.tar.bz2 \
@@ -46,13 +43,12 @@ RUN cpanm JSON
 #     && rm -rf bwa*
 
 # Install samtools
-RUN wget wget https://github.com/samtools/samtools/releases/download/1.15.1/samtools-1.15.1.tar.bz2 \
+RUN wget https://github.com/samtools/samtools/releases/download/1.15.1/samtools-1.15.1.tar.bz2 \
     && tar -xvjf samtools-1.15.1.tar.bz2 \
     && cd samtools-1.15.1 \
     && make \
     && mv samtools ../bin \
-    && cd .. \
-    && rm -rf 
+    && cd ..
 
 # Install picard
 RUN wget https://github.com/broadinstitute/picard/releases/download/2.27.2/picard.jar \
