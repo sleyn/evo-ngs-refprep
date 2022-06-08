@@ -9,20 +9,25 @@ WORKDIR /root/
 # Disable all questions from the apt
 ENV DEBIAN_FRONTEND=noninteractive
 
+# Create directory for binaries that should be copied to the new stage
+RUN mkdir -p ./bin
+
 # Install all dependences
 RUN apt-get update \
     && apt-get -y install wget \
                           make \
                           gcc \
-                          libbz2-dev \
-                          libncurses5-dev \
+                          # libbz2-dev \
+                          # libncurses5-dev \
                           # libncursesw5-dev \
                           csh \
-                          libcurl4-openssl-dev \
-                          liblzma-dev \
-                          zlib1g-dev \
+                          # libcurl4-openssl-dev \
+                          # liblzma-dev \
+                          # zlib1g-dev \
+                          bwa \
                           # perl \
                           # cpanminus \
+    && cp /usr/bin/bwa ./bin \
     && apt-get clean \
     && apt-get purge \
     && rm -rf /var/lib/apt/lists/* /tmp/* /var/tmp/*
@@ -31,14 +36,14 @@ RUN apt-get update \
 RUN cpanm JSON 
 
 # Install bwa
-RUN wget https://github.com/lh3/bwa/releases/download/v0.7.17/bwa-0.7.17.tar.bz2 \
-    && tar -xvjf bwa-0.7.17.tar.bz2 \
-    && cd bwa-0.7.17 \
-    && make \
-    && mkdir -p ../bin \
-    && mv bwa ../bin \
-    && cd .. \
-    && rm -rf bwa*
+# RUN wget https://github.com/lh3/bwa/releases/download/v0.7.17/bwa-0.7.17.tar.bz2 \
+#     && tar -xvjf bwa-0.7.17.tar.bz2 \
+#     && cd bwa-0.7.17 \
+#     && make \
+#     && mkdir -p ../bin \
+#     && mv bwa ../bin \
+#     && cd .. \
+#     && rm -rf bwa*
 
 # Install samtools
 RUN wget wget https://github.com/samtools/samtools/releases/download/1.15.1/samtools-1.15.1.tar.bz2 \
