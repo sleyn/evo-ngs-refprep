@@ -33,6 +33,9 @@ process PREPARE_SAMTOOLS_INDEX {
     input:
       path fna
 
+    output:
+      path "${fna}.fai"
+
     script:
     """
     samtools faidx ${fna}
@@ -51,11 +54,11 @@ process PREPARE_PICARD_DICT {
       path fna
 
     output:
-      path fna.baseName
+      path "${fna.baseName}.dict"
 
     script:
     """
-    java -Dpicard.useLegacyParser=false -jar picard.jar CreateSequenceDictionary -R ${fna} -O ${fna.baseName}
+    java -jar /usr/local/bin/picard.jar CreateSequenceDictionary -R ${fna} -O ${fna.baseName}.dict
     """
 }
 

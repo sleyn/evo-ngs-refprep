@@ -8,6 +8,7 @@ Docker image with tools for running preparation of reference genome for variant 
 - Picard
 - Samtools
 - MUMmer
+- JRE
 - Perl
   - JSON module
 - Python3
