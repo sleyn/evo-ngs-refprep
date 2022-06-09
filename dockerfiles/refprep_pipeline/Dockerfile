@@ -4,6 +4,8 @@ LABEL author "Semion Leyn"
 LABEL email "semen.leyn@gmail.com"
 LABEL description "Preparation of the reference genome for the variant calling pipeline"
 
+ARG TARGETPLATFORM
+
 WORKDIR /root/
 
 # Disable all questions from the apt
@@ -25,6 +27,7 @@ RUN apt-get update \
                           liblzma-dev \
                           zlib1g-dev \
                           bwa \
+                          git \
                           # perl \
                           # cpanminus \
     && cp /usr/bin/bwa ./bin \
@@ -60,12 +63,27 @@ RUN wget https://sourceforge.net/projects/mummer/files/mummer/3.23/MUMmer3.23.ta
     && cd MUMmer3.23 \
     && make \
     && cd .. \
-    && mv MUMmer3.23 ./bin
+    && mv MUMmer3.23/* ./bin
 
+# Install IS Finder blast database
+RUN git clone https://github.com/sleyn/ISfinder-sequences.git \
+    && cp -R ./ISfinder-sequences/blast_db ./data
+
+# Install BLAST using script that will download appropriate version for the platform
+COPY blast_setup.sh blast_setup.sh
+RUN ./blast_setup.sh
+
+# Install isfinder_db_parcer.py from iJump
+RUN git clone https://github.com/sleyn/ijump.git \
+    && chmod +x ./ijump/isfinder_db_parcer.py \
+    && cp ./ijump/isfinder_db_parcer.py ./bin
+
+#############################################################################
 # Configure main release
 FROM ubuntu:20.04
 WORKDIR /root/
 COPY --from=build /root/bin/* /usr/local/bin/
+COPY --from=build /root/data/* /root/data/
 
 # Add Mummer directory to PATH
 ENV PATH=${PATH}:/usr/local/bin/MUMmer3.23
