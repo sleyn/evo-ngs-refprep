@@ -79,6 +79,7 @@ RUN apt-get update \
                           cpanminus \
                           python3 \
                           python3-pip \
+                          libcurl4 \
     && apt-get clean \
     && apt-get purge \
     && rm -rf /var/lib/apt/lists/* /tmp/* /var/tmp/*
@@ -89,4 +90,4 @@ RUN cpanm JSON
 # Add Pandas and Biopython
 RUN pip3 install pandas biopython
 
-ENTRYPOINT ["bash"]
+ENTRYPOINT ["bash", "-l", "-c"]
