@@ -62,3 +62,23 @@ process PREPARE_PICARD_DICT {
     """
 }
 
+/*
+ * Process 4: Make IS elements coordinates file
+ */
+
+process PREPARE_IS_TABLE {
+    tag "${fna}_is_table"
+    publishDir "${launchDir}/${params.genome}", mode: 'copy'
+
+    input:
+      path fna
+    
+    output:
+      path "ISTable_processing.txt"
+
+    script:
+    """
+    blastn -query ${fna} -db /root/data/IS -out IS_blast_out -outfmt 6
+    isfinder_db_parcer.py -b IS_blast_out -o .
+    """
+}

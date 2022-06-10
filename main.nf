@@ -24,7 +24,8 @@ GFF file: $params.gff
 include {
     PREPARE_BWA_INDEX;
     PREPARE_SAMTOOLS_INDEX;
-    PREPARE_PICARD_DICT
+    PREPARE_PICARD_DICT;
+    PREPARE_IS_TABLE
 } from './modules.nf'
 
 /*
@@ -39,4 +40,5 @@ workflow {
     PREPARE_BWA_INDEX(fna_ch)
     PREPARE_SAMTOOLS_INDEX(fna_ch)
     PREPARE_PICARD_DICT(fna_ch)
+    PREPARE_IS_TABLE(fna_ch)
 }

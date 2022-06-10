@@ -83,7 +83,7 @@ RUN git clone https://github.com/sleyn/ijump.git \
 FROM ubuntu:20.04
 WORKDIR /root/
 COPY --from=build /root/bin/* /usr/local/bin/
-COPY --from=build /root/data/* /root/data/
+COPY --from=build /root/data/* /data/
 
 # Add Mummer directory to PATH
 ENV PATH=${PATH}:/usr/local/bin/MUMmer3.23
