@@ -78,7 +78,49 @@ process PREPARE_IS_TABLE {
 
     script:
     """
-    blastn -query ${fna} -db /root/data/IS -out IS_blast_out -outfmt 6
+    blastn -query ${fna} -db /data/IS -out IS_blast_out -outfmt 6
     isfinder_db_parcer.py -b IS_blast_out -o .
     """
 }
+
+/*
+ * Process 5: Make table with coordinates of repeated sequences
+ */
+
+process PREPARE_REPEAT_TABLE {
+    tag "${fna}_repeats"
+    publishDir "${launchDir}/${params.genome}", mode: 'copy'
+
+    input:
+      path fna
+
+    output:
+      path "${fna.baseName}.repeats"
+
+    script:
+    """
+    nucmer -p ${fna.baseName} -nosimplify --maxmatch ${fna} ${fna}
+    show-coords -clrT -I 90 -L 65 ${fna.baseName}.delta > ${fna.baseName}.aln
+    make_repeats.pl ${fna.baseName}
+    """
+}
+
+/*
+ * Process 6: Split GBK file for CNOGpro
+ */
+
+ process PREPARE_SPLIT_GBK_CNOGPRO {
+    tag "${gbk}_split_gbk"
+    publishDir "${launchDir}/${params.genome}", mode: 'copy'
+
+    input:
+      path gbk
+
+    output:
+      "CNOGpro/*.gbk"
+
+    script:
+    """
+    split_gbk.py -g ${gbk} -o CNOGpro
+    """
+ }

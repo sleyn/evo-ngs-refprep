@@ -6,6 +6,6 @@ elif [ ${TARGETPLATFORM} == "linux/arm64" ]; then
     TARFILE="ncbi-blast-2.13.0+-x64-arm-linux.tar.gz"
 fi
 
-wget ftp://ftp.ncbi.nlm.nih.gov/blast/executables/blast+/LATEST/${TARFILE}
+wget https://ftp.ncbi.nlm.nih.gov/blast/executables/blast+/LATEST/${TARFILE}
 tar -xvzf ${TARFILE}
-mv ncbi-blast-2.13.0+/bin/* ./bin
+mv ncbi-blast-2.13.0+/bin/* /usr/local/bin
