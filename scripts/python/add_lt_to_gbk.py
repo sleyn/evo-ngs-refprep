@@ -1,4 +1,4 @@
-#!/usr/bin/env python
+#!/usr/bin/env python3
 
 from Bio import SeqIO
 import argparse
@@ -7,8 +7,7 @@ import pandas as pd
 parser = argparse.ArgumentParser(description='Adds locus_tag field to the GBK file and sort features by position.')
 parser.add_argument('-g', '--gbk', help='Input GBK file.')
 parser.add_argument('-l', '--lt_file', default='', help='File with locus tag information. Required coulmns:'
-                                                        'accession, start, end, strand, refseq_locus_tag, gene.\n'
-                                                        'The ideal is a PATRIC .features.tab file.')
+                                                        'accession, start, end, strand, refseq_locus_tag, gene.')
 parser.add_argument('--sort_only', action='store_true', help='If selectd only sorting will be done.')
 parser.add_argument('-o', '--out_gbk', help='Output GBK file.')
 args = parser.parse_args()
