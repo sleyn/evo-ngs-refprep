@@ -1,24 +1,93 @@
 nextflow.enable.dsl = 2
 
 /*
-* Define the default parameters for reference preparation
-*/
+ * Define the default parameters for reference preparation
+ * based on the selected mode:
+ * - rasttk - genome was annotated by RASTtk
+ * - gto - genome was downloaded from PATRIC in a GTO format
+ * - explicit - all manupulations with genome were done manually and FNA, GBK and GFF files are ready to use
+ */
 
 params.genome = "Escherichia_coli_BW25113"
-params.fna = "${launchDir}/${params.genome}/${params.genome}.fna"
-params.gbk = "${launchDir}/${params.genome}/${params.genome}.gbk"
-params.gff = "${launchDir}/${params.genome}/${params.genome}.gff"
+params.mode = 'rasttk'
 
-log.info """\
-R E F E R E N C E   P R E P A R A T I O N
+if( params.mode == 'rasttk' ) {
+    /*
+     * Reference prepared from a genome annotated by RASTtk
+     */
 
-FNA file: $params.fna
-GBK file: $params.gbk
-GFF file: $params.gff
-"""
+    params.fna = "${launchDir}/${params.genome}/rasttk/${params.genome}.fna"
+    params.gbk = "${launchDir}/${params.genome}/rasttk/${params.genome}.gbk"
+    params.gff = "${launchDir}/${params.genome}/rasttk/${params.genome}.gff"
+    params.feature = "${launchDir}/${params.genome}/rasttk/${params.genome}.feature"
+
+    log.info """\
+    R E F E R E N C E   P R E P A R A T I O N
+
+    Reference preparation mode: $params.mode
+
+    FNA file: $params.fna
+    GBK file: $params.gbk
+    GFF file: $params.gff
+    FEATURE file: $params.feature
+    """
+}else if( params.mode == 'gto' ){
+    /*
+     * Reference prepared from a genome downloaded from the PATRIC database in GTO format
+     */
+
+    params.patric_id = "511145.12" // Using E. coli K-12 substr. MG1655 as default
+    params.feature = "${launchDir}/${params.genome}/gto/${params.genome}.feature"
+
+    log.info """\
+    R E F E R E N C E   P R E P A R A T I O N
+
+    Reference preparation mode: $params.mode
+
+    PATRIC ID of the genome: $params.patric_id
+    FEATURE file: $params.feature
+    """
+}else if( params.mode == 'explicit' ){
+    /*
+     * Reference prepared from a genome with properly formatted FNA, GFF and GBK files
+     */
+
+    params.fna = "${launchDir}/${params.genome}/rasttk/${params.genome}.fna"
+    params.gbk = "${launchDir}/${params.genome}/rasttk/${params.genome}.gbk"
+    params.gff = "${launchDir}/${params.genome}/rasttk/${params.genome}.gff"
+
+    log.info """\
+    R E F E R E N C E   P R E P A R A T I O N
+
+    Reference preparation mode: $params.mode
+
+    FNA file: $params.fna
+    GBK file: $params.gbk
+    GFF file: $params.gff
+    """
+}
 
 /*
- * Import modules
+ * Import modules for GTO mode
+ */
+
+if( params.mode == 'gto' ){
+    include {
+        DOWNLOAD_GTO;
+        GTO_TO_FNA;
+        GTO_TO_GFF;
+        GTO_TO_GBK
+    } from './modules.nf'
+}else if( params.mode != 'explicit' ){
+    include {
+        COPY_FNA;
+        ADD_LT_TO_GBK;
+        ADD_LT_TO_GFF;
+    } from './modules.nf'
+}
+
+/*
+ * Import common modules
  */
 
 include {
@@ -27,7 +96,8 @@ include {
     PREPARE_PICARD_DICT;
     PREPARE_IS_TABLE;
     PREPARE_REPEAT_TABLE;
-    PREPARE_SPLIT_GBK_CNOGPRO
+    PREPARE_SPLIT_GBK_CNOGPRO;
+    PREPARE_SNPEFF_CONFIG
 } from './modules.nf'
 
 /*
@@ -35,9 +105,30 @@ include {
  */
 
 workflow {
-    fna_ch = Channel.fromPath("$params.fna", checkIfExists: true)
-    gbk_ch = Channel.fromPath("$params.gbk", checkIfExists: true)
-    gff_ch = Channel.fromPath("$params.gff", checkIfExists: true)
+    if( params.mode == 'gto' ){
+        genome_id_ch = Channel.value("${params.genome}")
+        
+        DOWNLOAD_GTO(genome_id_ch)
+        GTO_TO_FNA(gto_ch, genome_id_ch)
+        GTO_TO_GFF(gto_ch, genome_id_ch)
+        GTO_TO_GBK(gto_ch, genome_id_ch)
+    }else if ( params.mode == 'rasttk' ){
+        fna_ch_raw = Channel.fromPath("${params.fna}", checkIfExists: true)
+        gbk_ch_raw = Channel.fromPath("${params.gbk}", checkIfExists: true)
+        gff_ch_raw = Channel.fromPath("${params.gff}", checkIfExists: true)
+
+        COPY_FNA(fna_ch_raw)
+    }else{
+        fna_ch = Channel.fromPath("${params.fna}", checkIfExists: true)
+        gbk_ch = Channel.fromPath("${params.gbk}", checkIfExists: true)
+        gff_ch = Channel.fromPath("${params.gff}", checkIfExists: true)
+    }
+
+    if(params.mode != 'explicit'){
+        features_ch = Channel.fromPath("${feature}", checkIfExists: true)
+        ADD_LT_TO_GBK(gbk_ch_raw, features_ch)
+        ADD_LT_TO_GFF(gff_ch_raw, features_ch)
+    }
 
     PREPARE_BWA_INDEX(fna_ch)
     PREPARE_SAMTOOLS_INDEX(fna_ch)
@@ -45,4 +136,5 @@ workflow {
     PREPARE_IS_TABLE(fna_ch)
     PREPARE_REPEAT_TABLE(fna_ch)
     PREPARE_SPLIT_GBK_CNOGPRO(gbk_ch)
+    PREPARE_SNPEFF_CONFIG(fna_ch)
 }

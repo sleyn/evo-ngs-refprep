@@ -6,7 +6,6 @@ import pandas as pd
 from Bio import SeqIO
 import logging
 
-
 class GffParser:
     def __init__(self):
         self.gff_repr = {'header': [], 'sequence-region': [], 'content': []}
@@ -136,13 +135,12 @@ class GffParser:
                     attr_field.append(f"{attr}={item['attributes'][attr]}")
                 out_gff.write('\t' + ';'.join(attr_field) + '\n')
 
-
 def main():
     parser = argparse.ArgumentParser(description='Add locus tags and gene names to gff file')
     parser.add_argument('-g', '--gff', help='Input RAST GFF file')
     parser.add_argument('-n', '--fna', help='Input FNA file to build headers')
     parser.add_argument('-f', '--features', help='Features table. Required coulmns:'
-                                                 'accession, start, end, strand, refseq_locus_tag, gene.')
+                                                'accession, start, end, strand, refseq_locus_tag, gene.')
     parser.add_argument('-o', '--out_gff', help='Output file.')
     args = parser.parse_args()
     
@@ -152,6 +150,6 @@ def main():
     gff.add_attributes(args.features)
     gff.write_gff(args.out_gff)
 
-
 if __name__ == "__main__":
     main()
+	
