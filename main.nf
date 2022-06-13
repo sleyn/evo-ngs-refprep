@@ -118,6 +118,7 @@ workflow {
         gff_ch_raw = Channel.fromPath("${params.gff}", checkIfExists: true)
 
         COPY_FNA(fna_ch_raw)
+        fna_ch = COPY_FNA.out.fna_ch
     }else{
         fna_ch = Channel.fromPath("${params.fna}", checkIfExists: true)
         gbk_ch = Channel.fromPath("${params.gbk}", checkIfExists: true)
@@ -125,9 +126,11 @@ workflow {
     }
 
     if(params.mode != 'explicit'){
-        features_ch = Channel.fromPath("${feature}", checkIfExists: true)
+        features_ch = Channel.fromPath("${params.feature}", checkIfExists: true)
         ADD_LT_TO_GBK(gbk_ch_raw, features_ch)
-        ADD_LT_TO_GFF(gff_ch_raw, features_ch)
+        gbk_ch = ADD_LT_TO_GBK.out.gbk_ch
+        ADD_LT_TO_GFF(gff_ch_raw, fna_ch, features_ch)
+        gff_ch = ADD_LT_TO_GFF.out.gff_ch
     }
 
     PREPARE_BWA_INDEX(fna_ch)

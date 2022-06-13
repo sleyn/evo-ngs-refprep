@@ -94,9 +94,10 @@ process GTO_TO_GBK {
     output:
       path "${params.genome}.fna", emit: fna_ch
 
-    script:
+    shell:
     """
-    echo publish FNA file
+    cp ${fna} ${params.genome}.fna
+    echo publish FNA file 
     """
  }
 
