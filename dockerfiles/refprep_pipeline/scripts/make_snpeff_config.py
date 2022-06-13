@@ -28,10 +28,10 @@ def main():
     logging.info('Write snpEff config part for the genome.')
     with open(output_file_path, 'w') as output_file:
         output_file.write(f'# {genome_name}\n')
-        output_file.write(f'# {genome_id}.genome: {genome_name}\n')
-        output_file.write(f'# {genome_id}.chromosomes: {", ".join(contig_ids)}\n')
+        output_file.write(f'{genome_id}.genome: {genome_name}\n')
+        output_file.write(f'    {genome_id}.chromosomes: {", ".join(contig_ids)}\n')
         for contig in contig_ids:
-            output_file.write(f'{genome_id}.{contig}.codonTable: Bacterial_and_Plant_Plastid\n')
+            output_file.write(f'    {genome_id}.{contig}.codonTable: Bacterial_and_Plant_Plastid\n')
 
 
 if __name__ == "__main__":
