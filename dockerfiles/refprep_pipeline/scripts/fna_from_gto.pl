@@ -7,9 +7,8 @@ my $gto_input = $ARGV[0];
 my $fna_output = $ARGV[1];
 
 open GTO, $gto_input;
-read(GTO, my $gto_input, (stat(GTO))[7]);
+read(GTO, my $gto, (stat(GTO))[7]);
 close GTO;
-print "$file start processing...\n";
 my $decoded = decode_json($gto);
 my $seedid = $decoded->{'source_id'};
 print "$seedid start processing...\n";
