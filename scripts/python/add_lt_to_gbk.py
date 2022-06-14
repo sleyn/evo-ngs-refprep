@@ -43,34 +43,38 @@ if not args.sort_only:
 
     new_featues_dict = dict(zip(feature_ids, features_new))
 
+
+new_gbk = []
+with open(args.gbk, 'r') as gb_file:
+    for record in SeqIO.parse(gb_file, 'gb'):
+        # Initialize dictionary to collect modified features
+        # start_of_the_feature -> feature
+        mod_features = dict()
+        # Initialize list to collect
+        for feature in record.features:
+            # Get the start of the feature
+            start = int(feature.location.start)
+            # Add locus_tag and gene qualifiers if they are exist
+            if not args.sort_only:
+                feature_id = record.annotations.get('accessions')[0] + \
+                     '_' + \
+                     str(feature.location.start + 1) + \
+                     '_' + \
+                     str(feature.location.end)
+                if new_featues_dict.get(feature_id, '') != '' and new_featues_dict.get(feature_id)[0] != '-':
+                    feature.qualifiers['locus_tag'] = new_featues_dict.get(feature_id)[0]
+                if new_featues_dict.get(feature_id, '') != '' and new_featues_dict.get(feature_id)[1] != '-':
+                    feature.qualifiers['gene'] = new_featues_dict.get(feature_id)[1]
+
+            # If start alrady exists increase it by 1 to not override previous feature
+            while start in mod_features:
+                start = start + 1
+            mod_features[start] = feature
+
+        # rebuild features
+        record.features = [mod_features[start] for start in sorted(mod_features.keys())]
+        new_gbk.append(record)
+
 with open(args.out_gbk, 'w') as out_file:
-    with open(args.gbk, 'r') as gb_file:
-        for record in SeqIO.parse(gb_file, 'gb'):
-            # Initialize dictionary to collect modified features
-            # start_of_the_feature -> feature
-            mod_features = dict()
-            # Initialize list to collect
-            for feature in record.features:
-                # Get the start of the feature
-                start = int(feature.location.start)
-                # Add locus_tag and gene qualifiers if they are exist
-                if not args.sort_only:
-                    feature_id = record.annotations.get('accessions')[0] + \
-                         '_' + \
-                         str(feature.location.start + 1) + \
-                         '_' + \
-                         str(feature.location.end)
-                    if new_featues_dict.get(feature_id, '') != '' and new_featues_dict.get(feature_id)[0] != '-':
-                        feature.qualifiers['locus_tag'] = new_featues_dict.get(feature_id)[0]
-                    if new_featues_dict.get(feature_id, '') != '' and new_featues_dict.get(feature_id)[1] != '-':
-                        feature.qualifiers['gene'] = new_featues_dict.get(feature_id)[1]
-
-                # If start alrady exists increase it by 1 to not override previous feature
-                while start in mod_features:
-                    start = start + 1
-                mod_features[start] = feature
-
-            # rebuild features
-            record.features = [mod_features[start] for start in sorted(mod_features.keys())]
-            SeqIO.write(record, out_file, 'gb')
+    SeqIO.write(new_gbk, out_file, 'gb')
 

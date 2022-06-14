@@ -81,32 +81,11 @@ process GTO_TO_GBK {
 }
 
 /*
- * Process RASTtk.1: Publish FNA file
- */
-
- process COPY_FNA {
-    tag "${fna.baseName} copy fna"
-    publishDir "${launchDir}/${params.genome}", mode: 'copy'
-
-    input:
-      path fna
-
-    output:
-      path "${params.genome}.fna", emit: fna_ch
-
-    shell:
-    """
-    cp ${fna} ${params.genome}.fna
-    echo publish FNA file 
-    """
- }
-
-/*
  * Process NON-EXPLICIT.1: Add locus tags and gene names to GBK file
  */
 
 process ADD_LT_TO_GBK {
-    tag "${gbk.baseName} add lt"
+    tag "${gbk.baseName} add lt to gbk"
     publishDir "${launchDir}/${params.genome}", mode: 'copy'
 
     input:
@@ -114,8 +93,8 @@ process ADD_LT_TO_GBK {
       path features
     
     output:
-      path ${params.genome}.gbk, emit: gbk_ch
-    
+      path "${params.genome}.gbk", emit: gbk_ch
+
     script:
     """
     add_lt_to_gbk.py -g ${gbk} -l ${features} -o ${params.genome}.gbk
@@ -127,7 +106,7 @@ process ADD_LT_TO_GBK {
  */
 
 process ADD_LT_TO_GFF {
-    tag "${gff.baseName} add lt"
+    tag "${gff.baseName} add lt to gff"
     publishDir "${launchDir}/${params.genome}", mode: 'copy'
 
     input:
@@ -136,11 +115,11 @@ process ADD_LT_TO_GFF {
       path features
     
     output:
-      path ${params.genome}.gff, emit: gff_ch
+      path "${params.genome}.gff", emit: gff_ch
     
     script:
     """
-    add_lt_to_ff.py -g ${gbk} -f ${features} -n ${fna} -o ${params.genome}.gff
+    add_lt_to_gff.py -g ${gff} -f ${features} -n ${fna} -o ${params.genome}.gff
     """
 }
 
@@ -257,13 +236,13 @@ process PREPARE_REPEAT_TABLE {
 
  process PREPARE_SPLIT_GBK_CNOGPRO {
     tag "${gbk.baseName} split GBK"
-    publishDir "${launchDir}/${params.genome}/CNOGpro", mode: 'copy'
+    publishDir "${launchDir}/${params.genome}", mode: 'copy'
 
     input:
       path gbk
 
     output:
-      "CNOGpro/*.gbk"
+      path "CNOGpro/*.gbk"
 
     script:
     """
@@ -277,7 +256,7 @@ process PREPARE_REPEAT_TABLE {
 
 process PREPARE_SNPEFF_CONFIG {
     tag "${params.genome} snpEff config portion"
-    publishDir "${launchDir}/${params.genome}/CNOGpro", mode: 'copy'
+    publishDir "${launchDir}/${params.genome}", mode: 'copy'
 
     input:
       path fna

@@ -80,7 +80,6 @@ if( params.mode == 'gto' ){
     } from './modules.nf'
 }else if( params.mode != 'explicit' ){
     include {
-        COPY_FNA;
         ADD_LT_TO_GBK;
         ADD_LT_TO_GFF;
     } from './modules.nf'
@@ -113,16 +112,21 @@ workflow {
         GTO_TO_GFF(gto_ch, genome_id_ch)
         GTO_TO_GBK(gto_ch, genome_id_ch)
     }else if ( params.mode == 'rasttk' ){
-        fna_ch_raw = Channel.fromPath("${params.fna}", checkIfExists: true)
-        gbk_ch_raw = Channel.fromPath("${params.gbk}", checkIfExists: true)
-        gff_ch_raw = Channel.fromPath("${params.gff}", checkIfExists: true)
+        fna_file = file("${params.fna}")
+        fna_file.copyTo("${launchDir}/${params.genome}/${params.genome}.fna")
+        fna_ch = Channel.fromPath("${launchDir}/${params.genome}/${params.genome}.fna", checkIfExists: true)
 
-        COPY_FNA(fna_ch_raw)
-        fna_ch = COPY_FNA.out.fna_ch
+        gbk_file = file("${params.gbk}")
+        gbk_file.copyTo("${launchDir}/${params.genome}/${params.genome}.gbk")
+        gbk_ch_raw = Channel.fromPath("${launchDir}/${params.genome}/${params.genome}.gbk", checkIfExists: true)
+
+        gff_file = file("${params.gff}")
+        gff_file.copyTo("${launchDir}/${params.genome}/${params.genome}.gff")
+        gff_ch_raw = Channel.fromPath("${launchDir}/${params.genome}/${params.genome}.gff", checkIfExists: true)
     }else{
         fna_ch = Channel.fromPath("${params.fna}", checkIfExists: true)
         gbk_ch = Channel.fromPath("${params.gbk}", checkIfExists: true)
-        gff_ch = Channel.fromPath("${params.gff}", checkIfExists: true)
+//        gff_ch = Channel.fromPath("${params.gff}", checkIfExists: true)
     }
 
     if(params.mode != 'explicit'){
@@ -130,7 +134,7 @@ workflow {
         ADD_LT_TO_GBK(gbk_ch_raw, features_ch)
         gbk_ch = ADD_LT_TO_GBK.out.gbk_ch
         ADD_LT_TO_GFF(gff_ch_raw, fna_ch, features_ch)
-        gff_ch = ADD_LT_TO_GFF.out.gff_ch
+//        gff_ch = ADD_LT_TO_GFF.out.gff_ch
     }
 
     PREPARE_BWA_INDEX(fna_ch)

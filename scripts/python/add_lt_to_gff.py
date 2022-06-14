@@ -35,7 +35,7 @@ class GffParser:
 
                     items_dict = dict(
                         zip(
-                            ['contig', 'source', 'type', 'start', 'end', 'score', 'phase'],
+                            ['contig', 'source', 'type', 'start', 'end', 'score', 'strand', 'phase'],
                             items
                         )
                     )
@@ -44,7 +44,8 @@ class GffParser:
                     attr_names = [a[0] for a in attributes]
                     attr_values = [a[1] for a in attributes]
                     # Change "Name" to "product" for functional attribute
-                    attr_names[attr_names.index('Name')] = 'product'
+                    if 'Name' in attr_names:
+                        attr_names[attr_names.index('Name')] = 'product'
                     items_dict['attributes'] = dict(zip(attr_names, attr_values))
                     self.gff_repr['content'].append(items_dict)
 
@@ -126,6 +127,7 @@ class GffParser:
                         item['start'],
                         item['end'],
                         item['score'],
+                        item['strand'],
                         item['phase']
                     ])
                 )
