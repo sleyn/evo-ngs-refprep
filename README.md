@@ -2,6 +2,22 @@
 
 The Nextflow workflow designed to generate files required for NGS variant calling of population and clonal data from morbidostat experiments.
 
+## Content
+
+- <a href="#requirements">Requirements</a>
+- <a href="#result_dir_str">Result directory structure</a>
+- <a href="#usage">Usage. The modes</a>
+  - <a href="#gto_mode">`gto` mode workflow</a>
+  - <a href="#rasttk_mode">`rasttk` mode workflow</a>
+  - <a href="#explicit_mode">`explicit` mode workflow</a>
+- <a href="#manual_pp">Manual postprocessing</a>
+  - <a href="#add_snpeff">1. Add genome to snpEff annotation database</a>
+  - <a href="#add_separator">2. Make a locus tag separator file</a>
+  - <a href="#add_unevolved">3. Add unevolved variants (A-samples)</a>
+- <a href="#gff_details">GFF format details</a>
+
+<a id="requirements"></a>
+
 ## Requirements
 
 The workflow organized using Nextflow. All reuired programs are installed in Docker images.
@@ -11,6 +27,8 @@ The pipeline require:
 - Java to run Nextflow ( [Java Download](https://www.oracle.com/java/technologies/downloads/) )
 - Nextflow ( [Nextflow installation](https://www.nextflow.io/docs/latest/getstarted.html) )
 - Docker ( [Docker installation](https://docs.docker.com/get-docker/) )
+
+<a id="result_dir_str"></a>
 
 ## Result directory structure
 
@@ -56,6 +74,8 @@ The resulted reference directory should have a following structure:
 - `CNOGpro` directory - The CNOGpro library that is used for CNV calling can't process multiple contigs. In order to use it we separate original GeneBank file to separate GeneBank file with for each contig.
 - `Asample` - Folder with results on variant calling for unevolved `A` samples.
 
+<a id="usage"></a>
+
 ## Usage. The modes
 
 The reference could be prepared with three related workflows. The choise of the workflow is dependent on how reference genome could be abtained.
@@ -66,6 +86,8 @@ Modes:
 - `rasttk`
 - `explicit`
 
+<a id="gto_mode"></a>
+
 ### `gto` mode workflow
 
 The easiest mode - preferred **if a good public genome is available**. It downloads and process all required information from the [PATRIC database](https://www.patricbrc.org/) based on the PATRIC Genome ID (PATRIC genome IDs look like `2345.1` where `2345` is genome id and `1` is genome version).
@@ -73,7 +95,7 @@ The easiest mode - preferred **if a good public genome is available**. It downlo
 ![gto mode ](/img/diagram_gto.jpeg)
 Figure 1. gto mode workflow chart.
 
-Usage:
+**Usage**:
 ```
 # from the Genomes directory. One level above the [genome_name] directory.
 nextflow [path/to/main.nf] --genome [genome_name] --patric_id [patric_id] --mode gto
@@ -82,7 +104,9 @@ nextflow [path/to/main.nf] --genome [genome_name] --patric_id [patric_id] --mode
 `[genome_name]` - name of the genome. Example: `Escherichia_coli_K12`
 `[patric_id]` - PATRIC Genome ID. Example: `511145.12`
 
-### `reasttk` mode workflow
+<a id="rasttk_mode"></a>
+
+### `rasttk` mode workflow
 
 The workflow for genomes annotated by [PATRIC Annotation RASTtk workflow](https://www.patricbrc.org/app/Annotation). This is useful if the genome is not public or not available in PATRIC.
 
@@ -116,13 +140,15 @@ Genomes
 ![gto mode ](/img/diagram_rasttk.jpeg)
 Figure 2. rasttk mode workflow chart.
 
-Usage:
+**Usage**:
 ```
 # from the Genomes directory. One level above the [genome_name] directory.
 nextflow [path/to/main.nf] --genome [genome_name] --mode rasttk
 ```
 
 `[genome_name]` - name of the genome. Example: `Escherichia_coli_K12`
+
+<a id="explicit_mode"></a>
 
 ### `explicit` mode workflow
 
@@ -139,15 +165,19 @@ Genomes
 ![gto mode ](/img/diagram_explicit.jpeg)
 Figure 2. explicit mode workflow chart.
 
-Usage:
+**Usage**:
 ```
 # from the Genomes directory. One level above the [genome_name] directory.
 nextflow [path/to/main.nf] --genome [genome_name] --mode explicit
 ```
 
+<a id="manual_pp"></a>
+
 ## Manual postprocessing
 
 Although workflows do most of required work to prepare reference some manual manupulations will be required.
+
+<a id="add_snpeff"></a>
 
 ### 1. Add genome to snpEff annotation database
 
@@ -174,6 +204,8 @@ java -jar snpEff.jar build -genbank -v [Database name]
 | --------------------------------- | ---------------------------------- |
 | Acinetobacter_baumannii_ATCC17978 | Abaumannii_ATCC17978_Assembly_RAST |
 
+<a id="add_separator"></a>
+
 ### 2. Make a locus tag separator file
 
 This file is used for preparing conddensed CNOGpro output.
@@ -186,11 +218,15 @@ This file is used for preparing conddensed CNOGpro output.
 
 The separator is a diference between two adjasent locus tags. Example: `AUO97b_00465` and `AUO97b_00466` have separator of one. `BSU_00470` and `BSU_00475` have separator 5.
 
-### 3. Unevolved variants (A-samples)
+<a id="add_unevolved"></a>
+
+### 3. Add unevolved variants (A-samples)
 
 After unevolved samples will be sequenced and variant calling results files are available they should be added to the reference.
 
 Create `Asample` directory with `vcf` subdirectory for variant calling files, `ijump` for iJump report files and `CNOGpro` for CNOGpro CNV report files. Name files `[reactor]A.vcf`, `[reactor]A.txt` and `CNOGpro_[reactor]A_chr[contig].txt` respectively.
+
+<a id="gff_details"></a>
 
 ## GFF format details
 
