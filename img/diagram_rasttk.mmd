@@ -1,0 +1,52 @@
+flowchart TD
+    p0((FNA))
+    p1((GBK))
+    p2((GFF))
+    p3((FEATURES\nmaually\ncreated))
+    p4[ADD_LT_TO_GBK]
+    p5[ADD_LT_TO_GFF]
+    p6(( ))
+    p7[PREPARE_BWA_INDEX]
+    p8(( ))
+    p9(( ))
+    p10(( ))
+    p11(( ))
+    p12(( ))
+    p13[PREPARE_SAMTOOLS_INDEX]
+    p14(( ))
+    p15[PREPARE_PICARD_DICT]
+    p16(( ))
+    p17[PREPARE_IS_TABLE]
+    p18(( ))
+    p19[PREPARE_REPEAT_TABLE]
+    p20(( ))
+    p21[PREPARE_SPLIT_GBK_CNOGPRO]
+    p22(( ))
+    p23[PREPARE_SNPEFF_CONFIG]
+    p24(( ))
+    p0 -->|fna| p5
+    p1 -->|gbk_raw| p4
+    p2 -->|gff_raw| p5
+    p3 -->|features| p4
+    p4 -->|gbk| p21
+    p4 -->|gbk| p25
+    p25(( ))
+    p3 -->|features| p5
+    p5 --> p6
+    p0 -->|fna| p7
+    p7 --> p12
+    p7 --> p11
+    p7 --> p10
+    p7 --> p9
+    p7 --> p8
+    p0 -->|fna| p13
+    p13 --> p14
+    p0 -->|fna| p15
+    p15 --> p16
+    p0 -->|fna| p17
+    p17 --> p18
+    p0 -->|fna| p19
+    p19 --> p20
+    p21 --> p22
+    p0 -->|fna| p23
+    p23 --> p24

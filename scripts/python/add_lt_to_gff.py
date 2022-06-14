@@ -9,16 +9,33 @@ import logging
 
 class GffParser:
     def __init__(self):
-        self.gff_repr = {'header': [], 'sequence-region': [], 'content': []}
+        self.gff_repr = {'header': [], 'sequence-region': [], 'content': [], 'fasta': []}
 
     # Read gff file
     def read_gff(self, gff_file_path):
         logging.info('Read GFF file')
+        # If file has as ##FASTA section switch behaviour 
+        # to read all subsequent lines to the 'fasta' key
+        fasta_switch = False
+        
         with open(gff_file_path, 'r') as gff_file:
             for line in gff_file:
                 # Remove new line symbol from the line
                 line = line.strip()
-
+                
+                # Skip empty lines
+                if len(line) == 0:
+                    continue
+                
+                # Check if we got to the fasta section
+                if line == '##FASTA':
+                    fasta_switch = True
+                
+                # If we are in the fasta section append everything to the 'fasta' key
+                if fasta_switch:
+                    self.gff_repr['fasta'].append(line)
+                    continue
+                
                 # Check if line is a header line
                 if line[0] == '#':
                     # Skip line with sequence region information as it will be added based on the FNA
@@ -137,6 +154,9 @@ class GffParser:
                 for attr in item['attributes']:
                     attr_field.append(f"{attr}={item['attributes'][attr]}")
                 out_gff.write('\t' + ';'.join(attr_field) + '\n')
+            
+            # Write fasta section
+            out_gff.write('\n'.join(self.gff_repr['fasta']))
 
 
 def main():

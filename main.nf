@@ -52,9 +52,9 @@ if( params.mode == 'rasttk' ) {
      * Reference prepared from a genome with properly formatted FNA, GFF and GBK files
      */
 
-    params.fna = "${launchDir}/${params.genome}/rasttk/${params.genome}.fna"
-    params.gbk = "${launchDir}/${params.genome}/rasttk/${params.genome}.gbk"
-    params.gff = "${launchDir}/${params.genome}/rasttk/${params.genome}.gff"
+    params.fna = "${launchDir}/${params.genome}/${params.genome}.fna"
+    params.gbk = "${launchDir}/${params.genome}/${params.genome}.gbk"
+    params.gff = "${launchDir}/${params.genome}/${params.genome}.gff"
 
     log.info """\
     R E F E R E N C E   P R E P A R A T I O N

@@ -1,0 +1,39 @@
+flowchart TD
+    p0((FNA))
+    p1((GBK))
+    p2[PREPARE_BWA_INDEX]
+    p3(( ))
+    p4(( ))
+    p5(( ))
+    p6(( ))
+    p7(( ))
+    p8[PREPARE_SAMTOOLS_INDEX]
+    p9(( ))
+    p10[PREPARE_PICARD_DICT]
+    p11(( ))
+    p12[PREPARE_IS_TABLE]
+    p13(( ))
+    p14[PREPARE_REPEAT_TABLE]
+    p15(( ))
+    p16[PREPARE_SPLIT_GBK_CNOGPRO]
+    p17(( ))
+    p18[PREPARE_SNPEFF_CONFIG]
+    p19(( ))
+    p0 -->|fna| p2
+    p1 -->|gbk| p16
+    p2 --> p7
+    p2 --> p6
+    p2 --> p5
+    p2 --> p4
+    p2 --> p3
+    p0 -->|fna| p8
+    p8 --> p9
+    p0 -->|fna| p10
+    p10 --> p11
+    p0 -->|fna| p12
+    p12 --> p13
+    p0 -->|fna| p14
+    p14 --> p15
+    p16 --> p17
+    p0 -->|fna| p18
+    p18 --> p19
