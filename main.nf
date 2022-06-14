@@ -37,7 +37,7 @@ if( params.mode == 'rasttk' ) {
      */
 
     params.patric_id = "511145.12" // Using E. coli K-12 substr. MG1655 as default
-    params.feature = "${launchDir}/${params.genome}/gto/${params.genome}.feature"
+    // params.feature = "${launchDir}/${params.genome}/gto/${params.genome}.feature"
 
     log.info """\
     R E F E R E N C E   P R E P A R A T I O N
@@ -45,7 +45,7 @@ if( params.mode == 'rasttk' ) {
     Reference preparation mode: $params.mode
 
     PATRIC ID of the genome: $params.patric_id
-    FEATURE file: $params.feature
+    Genome name: $params.genome
     """
 }else if( params.mode == 'explicit' ){
     /*
@@ -76,9 +76,12 @@ if( params.mode == 'gto' ){
         DOWNLOAD_GTO;
         GTO_TO_FNA;
         GTO_TO_GFF;
-        GTO_TO_GBK
+        GTO_TO_GBK;
+        GENERATE_FEATURES
     } from './modules.nf'
-}else if( params.mode != 'explicit' ){
+}
+
+if( params.mode != 'explicit' ){
     include {
         ADD_LT_TO_GBK;
         ADD_LT_TO_GFF;
@@ -105,24 +108,39 @@ include {
 
 workflow {
     if( params.mode == 'gto' ){
-        genome_id_ch = Channel.value("${params.genome}")
+        genome_id_ch = Channel.value("${params.patric_id}")
         
         DOWNLOAD_GTO(genome_id_ch)
-        GTO_TO_FNA(gto_ch, genome_id_ch)
-        GTO_TO_GFF(gto_ch, genome_id_ch)
-        GTO_TO_GBK(gto_ch, genome_id_ch)
+        gto_ch = DOWNLOAD_GTO.out.gto_ch
+
+        GTO_TO_FNA(gto_ch)
+        fna_ch = GTO_TO_FNA.out.fna_ch
+
+        GTO_TO_GFF(gto_ch)
+        gff_ch_raw = GTO_TO_GFF.out.gff_ch_raw
+
+        GTO_TO_GBK(gto_ch)
+        gbk_ch_raw = GTO_TO_GBK.out.gbk_ch_raw
+
+        GENERATE_FEATURES(genome_id_ch)
+        features_ch = GENERATE_FEATURES.out.features_ch
     }else if ( params.mode == 'rasttk' ){
+        // Copy FNA file to the main directory
         fna_file = file("${params.fna}")
         fna_file.copyTo("${launchDir}/${params.genome}/${params.genome}.fna")
         fna_ch = Channel.fromPath("${launchDir}/${params.genome}/${params.genome}.fna", checkIfExists: true)
 
+        // Copy GBK file to the main directory
         gbk_file = file("${params.gbk}")
         gbk_file.copyTo("${launchDir}/${params.genome}/${params.genome}.gbk")
         gbk_ch_raw = Channel.fromPath("${launchDir}/${params.genome}/${params.genome}.gbk", checkIfExists: true)
 
+        // Copy GFF file to the main directory
         gff_file = file("${params.gff}")
         gff_file.copyTo("${launchDir}/${params.genome}/${params.genome}.gff")
         gff_ch_raw = Channel.fromPath("${launchDir}/${params.genome}/${params.genome}.gff", checkIfExists: true)
+
+        features_ch = Channel.fromPath("${params.feature}", checkIfExists: true)
     }else{
         fna_ch = Channel.fromPath("${params.fna}", checkIfExists: true)
         gbk_ch = Channel.fromPath("${params.gbk}", checkIfExists: true)
@@ -130,7 +148,6 @@ workflow {
     }
 
     if(params.mode != 'explicit'){
-        features_ch = Channel.fromPath("${params.feature}", checkIfExists: true)
         ADD_LT_TO_GBK(gbk_ch_raw, features_ch)
         gbk_ch = ADD_LT_TO_GBK.out.gbk_ch
         ADD_LT_TO_GFF(gff_ch_raw, fna_ch, features_ch)

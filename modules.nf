@@ -4,7 +4,7 @@
 
  process DOWNLOAD_GTO {
      tag "${patric_id}"
-     container 'semenleyn/patric_cli_1.039_ubuntu_20.04:latest'
+     container "semenleyn/patric_cli_1.039_ubuntu_20.04:latest"
 
     input:
       val patric_id
@@ -28,14 +28,13 @@
 
     input:
       path gto
-      val genome
 
     output:
-      path "${genome}.fna", emit: fna_ch
+      path "${params.genome}.fna", emit: fna_ch
 
     script:
     """
-    fna_from_gto.pl ${gto} ${genome}.fna
+    fna_from_gto.pl ${gto} ${params.genome}.fna
     """
  }
 
@@ -45,17 +44,17 @@
 
 process GTO_TO_GFF {
     tag "${gto.baseName} gto2fna"
+    publishDir "${launchDir}/${params.genome}", mode: 'copy'
 
     input:
       path gto
-      val genome
 
     output:
-      path "${genome}.gff", emit: gff_ch_raw
+      path "${params.genome}.gff", emit: gff_ch_raw
 
     script:
     """
-    gff_from_gto_sorted.pl ${gto} ${genome}.gff
+    gff_from_gto_sorted.pl ${gto} ${params.genome}.gff
     """
 }
 
@@ -65,20 +64,43 @@ process GTO_TO_GFF {
 
 process GTO_TO_GBK {
     tag "${gto.baseName} gto2gbk"
+    publishDir "${launchDir}/${params.genome}", mode: 'copy'
     container 'semenleyn/patric_cli_1.039_ubuntu_20.04:latest'
 
     input:
       path gto
-      val genome
 
     output:
-      path "${genome}.gbk", emit: gbk_ch_raw
+      path "${params.genome}.gbk", emit: gbk_ch_raw
 
     script:
     """
-    rast-export-genome genbank < ${gto} > ${genome}.gbk
+    rast-export-genome genbank < ${gto} > ${params.genome}.gbk
     """
 }
+
+/*
+ * Process GTO.3: Generate features file
+ */
+
+ process GENERATE_FEATURES {
+    tag "${params.patric_id} feature file"
+    container "semenleyn/patric_cli_1.039_ubuntu_20.04:latest"
+
+    input:
+      val patric_id
+
+    output:
+      path "${patric_id}.features", emit: features_ch
+
+    script:
+    """
+    p3-echo -t genome_id ${patric_id} > ${patric_id}.txt
+    p3-get-genome-features --input ${patric_id}.txt \
+                           --attr accession,start,end,strand,refseq_locus_tag,gene > ${patric_id}.features
+    sed -i.bak 's/feature\\.//g' ${patric_id}.features
+    """
+ }
 
 /*
  * Process NON-EXPLICIT.1: Add locus tags and gene names to GBK file
