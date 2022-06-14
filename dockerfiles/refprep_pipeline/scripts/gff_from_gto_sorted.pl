@@ -1,20 +1,15 @@
 #!/usr/bin/env perl
 
 use strict;
+use warnings;
 use JSON qw( decode_json );
-
-my $outdir = "gff";                                                                                                                                                                                                                         
-unless(-e $outdir or mkdir($outdir)){
-    die "Cannot make $outdir\n";
-}
 
 my $gto_input = $ARGV[0];
 my $gff_output = $ARGV[1];
 
 open GTO, $gto_input;
-read(GTO, my $gto_input, (stat(GTO))[7]);
+read(GTO, my $gto, (stat(GTO))[7]);
 close GTO;
-print "$file start processing...\n";
 my $decoded = decode_json($gto);
 my $seedid = $decoded->{'source_id'};
 print "$seedid start processing...\n";
@@ -44,7 +39,7 @@ foreach my $cont ( keys %contigs ){     # process each contig
     
     my %features = ();          # features hash for sorting purposes
     for( my $j = 0; $j < scalar @{$f_by_c{$cont}}; $j++){
-        if($decoded->{'features'}[$f_by_c{$cont}[$j]]{'type'} eq 'peg' ){               #collect only CDS
+        # if($decoded->{'features'}[$f_by_c{$cont}[$j]]{'type'} eq 'peg' ){               #collect only CDS
             my $pos = 0;        # fosition of feature
             if( $decoded->{'features'}[$f_by_c{$cont}[$j]]{'location'}[0][2] eq "+" ){  #if the gene is on the forward strand write start first
                 $pos = $decoded->{'features'}[$f_by_c{$cont}[$j]]{'location'}[0][1];
@@ -72,7 +67,7 @@ foreach my $cont ( keys %contigs ){     # process each contig
                 $features{$pos} .= "product=Hypothetical protein";
             }
             $features{$pos} .= "\n";
-        }   
+        # }   
     }
     
     foreach my $pos ( sort {$a <=> $b} keys %features){         #sort features by positions
@@ -87,4 +82,3 @@ foreach my $contig ( keys %contigs ){
 }
 
 close GFF;
-print "$seedid finished processing...\n";
